@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>2045 우주 문제 해결 연구소</title>
+  <style>
+    :root{
+      --bg:#f6f4fb;--panel:#ffffff;--card:#ffffff;--text:#1f2430;--muted:#667085;
+      --border:#ded8eb;--accent:#7c3aed;--accent2:#9f67ff;--accent-bg:#f1eaff;
+      --hero1:#18224b;--hero2:#34396f;--hero3:#583b7f;--ok:#0f9d78;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",sans-serif;background:var(--bg);color:var(--text)}
+    button,textarea{font:inherit}
+    .app{max-width:980px;margin:24px auto;padding:0 16px 36px}
+    .shell{border:1px solid var(--border);border-radius:28px;overflow:hidden;background:var(--panel);box-shadow:0 10px 30px rgba(40,25,80,.08)}
+    .hero{padding:28px;background:linear-gradient(135deg,var(--hero1),var(--hero2) 62%,var(--hero3));color:#fff;display:flex;gap:18px;align-items:center}
+    .hero .emoji{font-size:58px;line-height:1}
+    .kicker{font-size:12px;font-weight:800;opacity:.75;letter-spacing:.04em}
+    .hero h1{margin:4px 0 0;font-size:30px;line-height:1.2}
+    .hero p{margin:10px 0 0;font-size:15px;opacity:.86}
+    .progress{padding:16px 24px 0;display:flex;gap:10px;align-items:center}
+    .dots{display:flex;gap:8px;flex:1}
+    .dot{width:10px;height:10px;border-radius:50%;background:var(--border)}
+    .dot.on{background:var(--accent)}
+    .counter{font-size:12px;font-weight:800;color:var(--muted)}
+    .content{padding:24px}
+    .step{display:none}.step.active{display:block}
+    .step-kicker{font-size:12px;font-weight:900;color:var(--accent);margin-bottom:8px}
+    h2{margin:0 0 10px;font-size:25px;line-height:1.35}
+    .lead{font-size:15px;color:var(--muted);line-height:1.65;margin:0 0 18px}
+    .grid{display:grid;gap:12px}.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+    .choice{position:relative;border:2px solid var(--border);border-radius:18px;background:var(--card);padding:15px;text-align:left;min-height:112px;cursor:pointer;transition:.16s ease;color:var(--text)}
+    .choice:hover{transform:translateY(-2px);border-color:#bda7e8}
+    .choice[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-bg)}
+    .choice[aria-pressed="true"]::after{content:"✓";position:absolute;right:11px;top:8px;color:var(--accent);font-weight:900}
+    .ico{display:block;font-size:31px;line-height:1;margin-bottom:9px}
+    .ttl{display:block;font-size:16px;font-weight:900}.sub{display:block;font-size:13px;color:var(--muted);line-height:1.45;margin-top:5px}
+    .tip{padding:14px 16px;border-radius:16px;background:var(--accent-bg);font-size:14px;line-height:1.6;margin-top:16px}
+    .chip-wrap{display:flex;flex-wrap:wrap;gap:9px}
+    .chip{min-height:42px;border:1px solid var(--border);border-radius:999px;padding:9px 13px;background:var(--card);font-size:13px;font-weight:800;cursor:pointer;color:var(--text)}
+    .chip[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-bg);color:var(--accent)}
+    .idea{width:100%;min-height:95px;border:1px solid var(--border);border-radius:16px;background:var(--card);padding:14px;font-size:16px;line-height:1.6;resize:vertical}
+    .focus-card{border-radius:18px;padding:16px;background:var(--accent-bg);border:1px solid var(--border);margin-bottom:15px}
+    .final-prompt{width:100%;min-height:430px;border:2px dashed var(--border);border-radius:18px;padding:17px;background:var(--card);font-size:15px;line-height:1.75;resize:vertical}
+    .live{margin-top:24px;border:2px solid var(--border);border-radius:20px;overflow:hidden;background:var(--card)}
+    .live-head{padding:13px 15px;background:var(--accent-bg);border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:center;justify-content:space-between}
+    .live-title{font-size:14px;font-weight:900}.live-sub{font-size:11px;color:var(--muted);margin-top:3px}
+    .tags{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;gap:6px;flex-wrap:wrap}
+    .tag{font-size:11px;font-weight:800;padding:5px 8px;border:1px solid var(--border);border-radius:999px;background:var(--bg)}
+    .live-prompt{width:100%;min-height:220px;border:0;padding:15px;background:transparent;font-size:13px;line-height:1.72;resize:vertical;color:var(--text)}
+    .actions{display:flex;gap:10px;justify-content:space-between;margin-top:22px;padding-top:18px;border-top:1px solid var(--border)}
+    .btn{min-height:48px;border-radius:14px;border:1px solid var(--border);background:var(--card);padding:11px 18px;font-weight:850;cursor:pointer;color:var(--text)}
+    .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}.btn.secondary{background:var(--accent-bg);border-color:var(--accent);color:var(--accent)}
+    .btn:disabled{opacity:.42;cursor:not-allowed}.status{text-align:center;font-size:12px;color:var(--muted);min-height:18px;margin-top:10px}
+    .solution-title{margin:0 0 6px;font-weight:900;font-size:17px}
+    .copy-result{margin-top:10px;font-size:13px;color:var(--ok);font-weight:800;min-height:18px}
+    .mini-note{font-size:12px;color:var(--muted);line-height:1.5;margin-top:6px}
+    @media (max-width:760px){.g4,.g3{grid-template-columns:repeat(2,minmax(0,1fr))}.hero h1{font-size:25px}.hero .emoji{font-size:48px}.content{padding:20px}.progress{padding-left:20px;padding-right:20px}}
+    @media (max-width:480px){.g2,.g3,.g4{grid-template-columns:1fr}.hero{padding:22px}.hero .emoji{display:none}.app{margin:0 auto;padding:0}.shell{border-radius:0;border-left:0;border-right:0}.live-head{align-items:flex-start;flex-direction:column}.actions{flex-wrap:wrap}.btn{flex:1 1 140px}}
+  </style>
+</head>
+<body>
+<div class="app">
+  <section class="shell">
+    <div class="hero">
+      <div class="emoji">🚀</div>
+      <div>
+        <div class="kicker">2045 SPACE PROBLEM LAB</div>
+        <h1>한 가지 우주 문제를<br>제대로 해결해 보자!</h1>
+        <p>한 번에 모든 것을 넣지 않고, 내가 고른 한 주제를 깊게 표현해요.</p>
+      </div>
+    </div>
+
+    <div class="progress"><div id="dots" class="dots"></div><div id="counter" class="counter"></div></div>
+
+    <div class="content">
+      <section class="step active" data-step="0">
+        <div class="step-kicker">STEP 1 · 오늘의 핵심 주제</div>
+        <h2>우주에서 내가 해결하고 싶은 문제 하나는?</h2>
+        <p class="lead">여러 개를 한꺼번에 넣지 않아요. 오늘 이미지에서 가장 잘 보이게 할 <strong>주인공 한 가지</strong>만 선택합니다.</p>
+        <div class="grid g3">
+          <button class="choice topic" data-v="oxygen" aria-pressed="false"><span class="ico">💨</span><span class="ttl">산소 문제</span><span class="sub">우주에서는 어떻게 숨을 쉴까?</span></button>
+          <button class="choice topic" data-v="water" aria-pressed="false"><span class="ico">💧</span><span class="ttl">물 문제</span><span class="sub">물을 어디에서 얻고 다시 쓸까?</span></button>
+          <button class="choice topic" data-v="temp" aria-pressed="false"><span class="ico">🌡️</span><span class="ttl">온도 문제</span><span class="sub">너무 춥고 뜨거운 곳에서 어떻게 살까?</span></button>
+          <button class="choice topic" data-v="energy" aria-pressed="false"><span class="ico">⚡</span><span class="ttl">에너지 문제</span><span class="sub">우주 집의 전기는 어디에서 올까?</span></button>
+          <button class="choice topic" data-v="food" aria-pressed="false"><span class="ico">🌱</span><span class="ttl">식량 문제</span><span class="sub">우주에서도 직접 음식을 만들 수 있을까?</span></button>
+          <button class="choice topic" data-v="living" aria-pressed="false"><span class="ico">🛋️</span><span class="ttl">생활 공간 문제</span><span class="sub">오래 살아도 편안한 집은 어떤 모습일까?</span></button>
+        </div>
+        <div id="topicExplain" class="tip">💡 한 가지를 고르면 다음 단계의 해결 방법도 그 주제에 맞게 달라져요.</div>
+      </section>
+
+      <section class="step" data-step="1">
+        <div class="step-kicker">STEP 2 · 장소</div>
+        <h2>이 문제를 어디에서 해결할까?</h2>
+        <p class="lead">장소가 달라지면 배경과 환경도 달라져요.</p>
+        <div class="grid g2">
+          <button class="choice place" data-v="moon" aria-pressed="false"><span class="ico">🌙</span><span class="ttl">달</span><span class="sub">회색 바위와 멀리 보이는 푸른 지구</span></button>
+          <button class="choice place" data-v="mars" aria-pressed="false"><span class="ico">🔴</span><span class="ttl">화성</span><span class="sub">붉은 모래와 바위가 펼쳐진 행성</span></button>
+          <button class="choice place" data-v="station" aria-pressed="false"><span class="ico">🛰️</span><span class="ttl">우주정거장</span><span class="sub">큰 창밖으로 지구가 보이는 우주 공간</span></button>
+          <button class="choice place" data-v="ice" aria-pressed="false"><span class="ico">❄️</span><span class="ttl">얼음 위성</span><span class="sub">푸른 얼음과 얼음 절벽으로 뒤덮인 세계</span></button>
+        </div>
+      </section>
+
+      <section class="step" data-step="2">
+        <div class="step-kicker">STEP 3 · 핵심 해결 방법</div>
+        <h2 id="solutionTitle">어떻게 해결할까?</h2>
+        <p class="lead">내가 고른 주제에 맞는 해결 방법을 <strong>1~2개</strong> 선택해요. 이 부분이 이미지의 가장 중요한 장면이 됩니다.</p>
+        <div id="solutionGrid" class="grid g2"></div>
+      </section>
+
+      <section class="step" data-step="3">
+        <div class="step-kicker">STEP 4 · 집 모양</div>
+        <h2>해결 방법이 잘 보이는 집은 어떤 모습일까?</h2>
+        <p class="lead">집 모양을 하나만 선택해요.</p>
+        <div class="grid g4">
+          <button class="choice shape" data-v="dome" aria-pressed="false"><span class="ico">🔵</span><span class="ttl">둥근 돔</span><span class="sub">안이 잘 보이는 큰 돔</span></button>
+          <button class="choice shape" data-v="underground" aria-pressed="false"><span class="ico">⛰️</span><span class="ttl">지하 기지</span><span class="sub">땅속에 숨은 안전한 집</span></button>
+          <button class="choice shape" data-v="module" aria-pressed="false"><span class="ico">🧩</span><span class="ttl">연결형 기지</span><span class="sub">여러 방이 통로로 연결</span></button>
+          <button class="choice shape" data-v="tower" aria-pressed="false"><span class="ico">🏙️</span><span class="ttl">우주 타워</span><span class="sub">여러 층이 위로 이어지는 집</span></button>
+          <button class="choice shape" data-v="bubble" aria-pressed="false"><span class="ico">🫧</span><span class="ttl">버블 하우스</span><span class="sub">둥근 방 여러 개가 연결</span></button>
+          <button class="choice shape" data-v="tree" aria-pressed="false"><span class="ico">🌳</span><span class="ttl">우주 나무집</span><span class="sub">가지처럼 공간이 뻗어나가는 집</span></button>
+          <button class="choice shape" data-v="ring" aria-pressed="false"><span class="ico">⭕</span><span class="ttl">고리형 기지</span><span class="sub">동그란 고리 모양의 거주지</span></button>
+          <button class="choice shape" data-v="free" aria-pressed="false"><span class="ico">✨</span><span class="ttl">AI가 상상</span><span class="sub">조건에 맞는 새로운 모양</span></button>
+        </div>
+      </section>
+
+      <section class="step" data-step="4">
+        <div class="step-kicker">STEP 5 · 그림 스타일</div>
+        <h2>어떤 그림으로 보여줄까?</h2>
+        <p class="lead">그림의 느낌을 하나 선택해요.</p>
+        <div class="grid g3">
+          <button class="choice style" data-v="storybook" aria-pressed="false"><span class="ico">📖</span><span class="ttl">동화책</span><span class="sub">따뜻하고 부드럽게</span></button>
+          <button class="choice style" data-v="cartoon" aria-pressed="false"><span class="ico">🧸</span><span class="ttl">귀여운 만화</span><span class="sub">밝고 친근하게</span></button>
+          <button class="choice style" data-v="animation" aria-pressed="false"><span class="ico">🎬</span><span class="ttl">3D 애니메이션</span><span class="sub">입체적인 영화 느낌</span></button>
+          <button class="choice style" data-v="watercolor" aria-pressed="false"><span class="ico">🎨</span><span class="ttl">수채화</span><span class="sub">물감이 번지는 부드러운 느낌</span></button>
+          <button class="choice style" data-v="pencil" aria-pressed="false"><span class="ico">✏️</span><span class="ttl">색연필</span><span class="sub">손으로 직접 그린 느낌</span></button>
+          <button class="choice style" data-v="paper" aria-pressed="false"><span class="ico">✂️</span><span class="ttl">종이 공예</span><span class="sub">색종이를 오려 만든 듯한 모습</span></button>
+          <button class="choice style" data-v="clay" aria-pressed="false"><span class="ico">🟠</span><span class="ttl">클레이</span><span class="sub">찰흙 미니어처 느낌</span></button>
+          <button class="choice style" data-v="future" aria-pressed="false"><span class="ico">✨</span><span class="ttl">미래 SF</span><span class="sub">첨단 기술이 빛나는 미래 세계</span></button>
+          <button class="choice style" data-v="real" aria-pressed="false"><span class="ico">🚀</span><span class="ttl">실제 우주기지</span><span class="sub">실제로 있을 법하게</span></button>
+          <button class="choice style" data-v="retro" aria-pressed="false"><span class="ico">📺</span><span class="ttl">레트로 미래</span><span class="sub">옛날 사람들이 상상한 미래</span></button>
+          <button class="choice style" data-v="neon" aria-pressed="false"><span class="ico">🌃</span><span class="ttl">네온 우주도시</span><span class="sub">빛나는 미래 도시 느낌</span></button>
+          <button class="choice style" data-v="mini" aria-pressed="false"><span class="ico">🏠</span><span class="ttl">미니어처</span><span class="sub">작은 모형 세계처럼</span></button>
+        </div>
+      </section>
+
+      <section class="step" data-step="5">
+        <div class="step-kicker">STEP 6 · 나만의 아이디어</div>
+        <h2>여기서부터는 내 상상!</h2>
+        <p class="lead">버튼을 골라도 되고, 직접 한 문장만 적어도 됩니다. 최종 프롬프트는 나중에 또 고칠 수 있어요.</p>
+        <div class="chip-wrap">
+          <button class="chip idea-btn" data-text="창문 밖으로 푸른 지구가 크게 보이게 해줘." aria-pressed="false">🌍 큰 지구 창</button>
+          <button class="chip idea-btn" data-text="별 모양 창문을 만들어줘." aria-pressed="false">⭐ 별 모양 창</button>
+          <button class="chip idea-btn" data-text="작은 우주 로봇 친구가 장치를 관리하는 모습을 넣어줘." aria-pressed="false">🤖 로봇 친구</button>
+          <button class="chip idea-btn" data-text="내가 좋아하는 색으로 장치와 방을 꾸며줘." aria-pressed="false">🌈 나만의 색</button>
+          <button class="chip idea-btn" data-text="어린이들이 장치를 직접 사용하고 관찰하는 모습을 넣어줘." aria-pressed="false">🧑‍🚀 내가 사용하는 모습</button>
+        </div>
+        <textarea id="personalIdea" class="idea" maxlength="160" placeholder="예: 물을 저장하는 탱크를 커다란 고래 모양으로 만들어줘."></textarea>
+        <div class="tip">💡 처음부터 긴 프롬프트를 쓰는 것이 아니라, <strong>이미 만들어진 프롬프트에 내 생각을 조금씩 더하는 것</strong>이 목표예요.</div>
+      </section>
+
+      <section class="step" data-step="6">
+        <div class="step-kicker">FINAL · 내가 직접 고치기</div>
+        <h2>이제 프롬프트도 내가 설계해요.</h2>
+        <p class="lead">아래 프롬프트는 지금까지 선택한 내용으로 만들어졌어요. 원하는 말을 직접 바꿔도 됩니다.</p>
+        <div class="focus-card">
+          <div style="font-size:12px;font-weight:900;color:var(--accent);margin-bottom:5px">✏️ 이렇게 조금씩 바꿔 보세요</div>
+          <div style="font-size:14px;line-height:1.7">“크게” → “아주 크게” · “둥근” → “별 모양” · “밝은” → “보라색” · “사람” → “어린이 3명”</div>
+        </div>
+        <textarea id="finalPrompt" class="final-prompt"></textarea>
+        <div class="chip-wrap" style="margin-top:12px">
+          <button id="copyFinal" class="btn primary">📋 바로 복사</button>
+          <button id="restoreFinal" class="btn secondary">↩️ 선택 내용으로 되돌리기</button>
+        </div>
+        <div id="copyResult" class="copy-result"></div>
+      </section>
+
+      <div id="liveBox" class="live">
+        <div class="live-head">
+          <div><div class="live-title">🧩 지금까지 만들어진 내 프롬프트</div><div class="live-sub">선택할 때마다 이 내용이 바로 바뀝니다.</div></div>
+          <button id="copyLive" class="btn primary">📋 복사</button>
+        </div>
+        <div id="liveTags" class="tags"><span style="font-size:12px;color:var(--muted)">첫 번째 주제를 골라 주세요.</span></div>
+        <textarea id="livePrompt" class="live-prompt" readonly>[우주 거주지 이미지 만들기]\n\n아직 선택한 내용이 없어요.</textarea>
+        <div id="liveCopyMsg" class="mini-note" style="padding:0 14px 12px"></div>
+      </div>
+
+      <div class="actions">
+        <button id="prevBtn" class="btn">← 이전</button>
+        <button id="nextBtn" class="btn primary">다음 →</button>
+      </div>
+      <div id="status" class="status" aria-live="polite"></div>
+    </div>
+  </section>
+</div>
+<script>
+(() => {
+  const root = document.querySelector('.app');
+  const state = { step:0, topic:null, place:null, solutions:new Set(), shape:null, style:null, ideas:new Set() };
+
+  const TOP = {
+    oxygen:{short:'💨 산소',title:'숨 쉴 공기를 어떻게 만들까?',base:'산소를 중심 주제로 한 우주 거주지'},
+    water:{short:'💧 물',title:'우주에서 물을 어떻게 얻고 다시 쓸까?',base:'물의 저장과 재활용을 중심 주제로 한 우주 거주지'},
+    temp:{short:'🌡️ 온도',title:'너무 춥고 뜨거운 환경을 어떻게 막을까?',base:'실내 온도 조절을 중심 주제로 한 우주 거주지'},
+    energy:{short:'⚡ 에너지',title:'우주 집의 전기를 어떻게 만들까?',base:'에너지 생산과 저장을 중심 주제로 한 우주 거주지'},
+    food:{short:'🌱 식량',title:'우주에서도 먹을 것을 직접 키울 수 있을까?',base:'식량 생산을 중심 주제로 한 우주 거주지'},
+    living:{short:'🛋️ 생활공간',title:'오랫동안 편안하게 살 수 있는 공간은?',base:'편안한 생활 공간을 중심 주제로 한 우주 거주지'}
+  };
+
+  const SOL = {
+    oxygen:[
+      ['generator','💨 산소 생성기','물을 이용해 산소를 만드는 장치'],
+      ['plants','🌿 식물방','많은 식물이 자라는 산소 식물방'],
+      ['algae','🟢 조류 배양실','산소 생산을 돕는 초록 조류 배양 공간'],
+      ['circulation','🌀 공기 순환','깨끗한 공기를 집 전체로 보내는 순환 장치']
+    ],
+    water:[
+      ['tank','💧 물 저장탱크','깨끗한 물을 보관하는 투명한 대형 물탱크'],
+      ['recycle','♻️ 물 재활용','사용한 물을 깨끗하게 만들어 다시 쓰는 장치'],
+      ['ice','🧊 얼음 채취','주변 얼음을 채취하여 물로 만드는 장치'],
+      ['gardenwater','🌱 농장 물 순환','식물 재배실에서 물이 계속 순환하는 장치']
+    ],
+    temp:[
+      ['insulation','🧱 단열벽','외부의 뜨겁고 차가운 온도를 막는 두꺼운 단열벽'],
+      ['undergroundheat','⛰️ 지하 공간','온도 변화가 적은 땅속 생활 공간'],
+      ['control','🌡️ 온도 조절','집 안의 온도를 일정하게 유지하는 자동 장치'],
+      ['shield','🛡️ 보호 돔','외부 환경을 막아 주는 두꺼운 보호 돔']
+    ],
+    energy:[
+      ['solar','☀️ 태양광','거주지 주변에 펼쳐진 커다란 태양광 패널'],
+      ['battery','🔋 배터리','만든 전기를 저장하는 대형 에너지 배터리'],
+      ['smart','💡 절약형 집','전기를 적게 사용하는 스마트 조명과 생활 공간'],
+      ['controlroom','🖥️ 에너지실','전기 생산과 사용량을 관리하는 에너지 제어실']
+    ],
+    food:[
+      ['farm','🌱 실내 농장','채소와 식물이 가득한 대형 실내 우주 농장'],
+      ['hydro','💧 수경재배','흙 없이 물로 채소를 키우는 수경재배 장치'],
+      ['vertical','🥬 수직 농장','여러 층으로 높게 쌓인 자동 수직 농장'],
+      ['robotfarm','🤖 농장 로봇','식물에 물과 빛을 공급하는 작은 농장 로봇']
+    ],
+    living:[
+      ['bed','🛏️ 침실','편안하게 잠을 잘 수 있는 아늑한 침실'],
+      ['play','🎮 놀이방','어린이들이 함께 놀 수 있는 우주 놀이방'],
+      ['garden','🌳 정원','꽃과 작은 나무가 있는 편안한 실내 정원'],
+      ['library','📚 도서관','책을 읽고 공부하는 우주 도서관'],
+      ['sports','🏀 운동장','몸을 움직일 수 있는 무중력 운동 공간'],
+      ['window','🌍 전망 공간','큰 창문으로 지구와 별을 바라보는 휴식 공간']
+    ]
+  };
+
+  const PLACE = {
+    moon:{short:'🌙 달',text:'회색 바위가 펼쳐지고 멀리 푸른 지구가 보이는 달 표면'},
+    mars:{short:'🔴 화성',text:'붉은 모래와 바위가 펼쳐진 화성 표면'},
+    station:{short:'🛰️ 우주정거장',text:'우주 공간을 돌며 큰 창밖으로 지구가 보이는 우주정거장'},
+    ice:{short:'❄️ 얼음 위성',text:'푸른 얼음과 얼음 절벽으로 뒤덮인 아주 추운 위성'}
+  };
+
+  const SHAPE = {
+    dome:'커다란 둥근 돔 모양의 집',
+    underground:'땅속에 일부가 들어간 지하 기지',
+    module:'여러 방이 통로로 연결된 모듈형 기지',
+    tower:'여러 층으로 올라가는 우주 타워',
+    bubble:'동그란 방 여러 개가 연결된 버블 하우스',
+    tree:'나뭇가지처럼 공간이 뻗어나가는 우주 나무집',
+    ring:'커다란 고리 모양의 우주 기지',
+    free:'선택한 문제 해결 방법이 가장 잘 드러나는 독창적인 미래형 건축물'
+  };
+
+  const STYLE = {
+    storybook:'따뜻한 어린이 동화책 일러스트',cartoon:'밝고 귀여운 만화 스타일',animation:'입체적인 3D 애니메이션 스타일',
+    watercolor:'부드러운 수채화 스타일',pencil:'손으로 그린 색연필 스타일',paper:'색종이를 겹쳐 만든 종이 공예 스타일',
+    clay:'귀여운 클레이 미니어처 스타일',future:'빛나는 첨단 기술의 미래 SF 스타일',real:'실제로 존재할 법한 현실적인 우주기지 스타일',
+    retro:'레트로 퓨처 스타일',neon:'화려한 네온 우주도시 스타일',mini:'작은 모형 세계 같은 미니어처 스타일'
+  };
+
+  const steps = [...document.querySelectorAll('.step')];
+  const dots = document.getElementById('dots');
+  steps.forEach(() => { const d=document.createElement('span'); d.className='dot'; dots.appendChild(d); });
+
+  const counter=document.getElementById('counter'), status=document.getElementById('status');
+  const prevBtn=document.getElementById('prevBtn'), nextBtn=document.getElementById('nextBtn');
+
+  const single = (selector, value) => document.querySelectorAll(selector).forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === value)));
+  const canContinue = () => {
+    if(state.step===0) return !!state.topic;
+    if(state.step===1) return !!state.place;
+    if(state.step===2) return state.solutions.size>=1;
+    if(state.step===3) return !!state.shape;
+    if(state.step===4) return !!state.style;
+    return true;
+  };
+
+  function updateNav(){
+    prevBtn.disabled = state.step===0;
+    nextBtn.disabled = !canContinue();
+    nextBtn.textContent = state.step===steps.length-1 ? '완료 ✓' : '다음 →';
+    counter.textContent = `${state.step+1} / ${steps.length}`;
+    [...dots.children].forEach((d,i)=>d.classList.toggle('on', i<=state.step));
+    let msg='';
+    if(!canContinue()){
+      if(state.step===0) msg='오늘 해결할 문제를 하나 골라 주세요.';
+      if(state.step===1) msg='장소를 하나 골라 주세요.';
+      if(state.step===2) msg='해결 방법을 하나 이상 골라 주세요.';
+      if(state.step===3) msg='집 모양을 하나 골라 주세요.';
+      if(state.step===4) msg='그림 스타일을 하나 골라 주세요.';
+    }
+    status.textContent=msg;
+  }
+
+  function showStep(i){
+    state.step=Math.max(0,Math.min(i,steps.length-1));
+    steps.forEach((s,n)=>s.classList.toggle('active',n===state.step));
+    if(state.step===2) renderSolutions();
+    if(state.step===6) renderFinal();
+    updateNav();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+
+  function renderSolutions(){
+    document.getElementById('solutionTitle').textContent=TOP[state.topic].title;
+    const grid=document.getElementById('solutionGrid'); grid.innerHTML='';
+    SOL[state.topic].forEach(([id,title,desc])=>{
+      const b=document.createElement('button');
+      b.className='choice'; b.type='button'; b.dataset.sol=id; b.setAttribute('aria-pressed',String(state.solutions.has(id)));
+      b.innerHTML=`<span class="ttl">${title}</span><span class="sub">${desc}</span>`;
+      b.addEventListener('click',()=>{
+        if(state.solutions.has(id)) state.solutions.delete(id);
+        else if(state.solutions.size<2) state.solutions.add(id);
+        else { status.textContent='해결 방법은 최대 2개까지 선택해요.'; return; }
+        b.setAttribute('aria-pressed',String(state.solutions.has(id)));
+        updateLive(); updateNav();
+      });
+      grid.appendChild(b);
+    });
+  }
+
+  function solutionTexts(){ return SOL[state.topic].filter(x=>state.solutions.has(x[0])).map(x=>x[2]); }
+  function solutionShorts(){ return SOL[state.topic].filter(x=>state.solutions.has(x[0])).map(x=>x[1]); }
+  function ideas(){ const arr=[...state.ideas]; const free=document.getElementById('personalIdea').value.trim(); if(free) arr.push(free); return arr; }
+
+  function makePrompt(){
+    let out='[우주 거주지 이미지 만들기]\n';
+    if(state.topic) out += `\n■ 오늘의 핵심 주제\n- ${TOP[state.topic].base}\n`;
+    if(state.place) out += `\n■ 장소\n- ${PLACE[state.place].text}\n`;
+    if(state.solutions.size){
+      out += '\n■ 핵심 해결 방법\n';
+      solutionTexts().forEach(x=>out += `- ${x}\n`);
+      out += '- 이 장치와 공간이 그림에서 가장 중요한 주제로 크게 잘 보이게 표현\n';
+    }
+    if(state.shape) out += `\n■ 집 모양\n- ${SHAPE[state.shape]}\n`;
+    if(state.style) out += `\n■ 그림 스타일\n- ${STYLE[state.style]}\n`;
+    const a=ideas();
+    if(a.length){ out += '\n■ 나만의 아이디어\n'; a.forEach(x=>out += `- ${x}\n`); }
+    if(state.topic && state.place && state.solutions.size && state.shape && state.style){
+      out += '\n■ 그림 구성\n';
+      out += '- 여러 주제를 한꺼번에 강조하지 말고 오늘의 핵심 주제가 가장 먼저 눈에 들어오게\n';
+      out += '- 선택한 해결 장치의 모습과 사용 방법을 어린이도 쉽게 이해할 수 있게\n';
+      out += '- 우주 거주지의 전체 모습과 핵심 공간을 함께 보여주기\n';
+      out += '- 사람이 안전하고 즐겁게 생활하는 모습을 자연스럽게 넣기\n';
+      out += '- 그림 안에는 글자나 설명 문구를 넣지 않기\n';
+    }
+    return out;
+  }
+
+  function updateLive(){
+    const tags=document.getElementById('liveTags'); tags.innerHTML='';
+    const items=[];
+    if(state.topic) items.push(TOP[state.topic].short);
+    if(state.place) items.push(PLACE[state.place].short);
+    solutionShorts().forEach(x=>items.push(`🛠️ ${x.replace(/^..\s?/,'')}`));
+    if(state.shape) items.push('🏠 집 모양');
+    if(state.style) items.push('🎨 그림 스타일');
+    if(ideas().length) items.push('💡 내 아이디어');
+    if(!items.length){ const s=document.createElement('span'); s.style.cssText='font-size:12px;color:var(--muted)'; s.textContent='첫 번째 주제를 골라 주세요.'; tags.appendChild(s); }
+    else items.forEach(t=>{ const s=document.createElement('span'); s.className='tag'; s.textContent=t; tags.appendChild(s); });
+    document.getElementById('livePrompt').value=makePrompt();
+  }
+
+  document.querySelectorAll('.topic').forEach(b=>b.addEventListener('click',()=>{
+    state.topic=b.dataset.v; state.solutions.clear(); single('.topic',state.topic);
+    document.getElementById('topicExplain').textContent=`${TOP[state.topic].short}을(를) 오늘의 핵심 주제로 선택했어요. 다음 단계부터 이 문제를 해결하는 이미지가 만들어집니다.`;
+    updateLive(); updateNav();
+  }));
+  document.querySelectorAll('.place').forEach(b=>b.addEventListener('click',()=>{ state.place=b.dataset.v; single('.place',state.place); updateLive(); updateNav(); }));
+  document.querySelectorAll('.shape').forEach(b=>b.addEventListener('click',()=>{ state.shape=b.dataset.v; single('.shape',state.shape); updateLive(); updateNav(); }));
+  document.querySelectorAll('.style').forEach(b=>b.addEventListener('click',()=>{ state.style=b.dataset.v; single('.style',state.style); updateLive(); updateNav(); }));
+  document.querySelectorAll('.idea-btn').forEach(b=>b.addEventListener('click',()=>{
+    const t=b.dataset.text; state.ideas.has(t)?state.ideas.delete(t):state.ideas.add(t); b.setAttribute('aria-pressed',String(state.ideas.has(t))); updateLive();
+  }));
+  document.getElementById('personalIdea').addEventListener('input',updateLive);
+
+  function renderFinal(){ document.getElementById('finalPrompt').value=makePrompt(); }
+  document.getElementById('restoreFinal').addEventListener('click',renderFinal);
+
+  async function copyText(textarea, resultEl){
+    const text=textarea.value;
+    try{
+      if(navigator.clipboard && window.isSecureContext){ await navigator.clipboard.writeText(text); resultEl.textContent='✅ 복사 완료! 이미지 생성 AI에 붙여넣으세요.'; return; }
+    }catch(e){}
+    textarea.focus(); textarea.select();
+    try{ const ok=document.execCommand('copy'); resultEl.textContent=ok?'✅ 복사 완료! 이미지 생성 AI에 붙여넣으세요.':'전체가 선택됐어요. Ctrl+C를 눌러 복사해 주세요.'; }
+    catch(e){ resultEl.textContent='전체가 선택됐어요. Ctrl+C를 눌러 복사해 주세요.'; }
+  }
+
+  document.getElementById('copyFinal').addEventListener('click',()=>copyText(document.getElementById('finalPrompt'),document.getElementById('copyResult')));
+  document.getElementById('copyLive').addEventListener('click',()=>copyText(document.getElementById('livePrompt'),document.getElementById('liveCopyMsg')));
+
+  prevBtn.addEventListener('click',()=>showStep(state.step-1));
+  nextBtn.addEventListener('click',()=>{ if(state.step<steps.length-1 && canContinue()) showStep(state.step+1); });
+
+  updateNav(); updateLive();
+})();
+</script>
+</body>
+</html>
